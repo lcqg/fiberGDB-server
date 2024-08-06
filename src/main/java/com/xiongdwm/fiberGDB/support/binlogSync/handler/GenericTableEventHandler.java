@@ -7,44 +7,39 @@ import com.xiongdwm.fiberGDB.bo.fiberRDB.FiberEntityRDB;
 import com.xiongdwm.fiberGDB.bo.fiberRDB.RoutePointEntityRDB;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
-import com.xiongdwm.fiberGDB.repository.RoutePointRepo;
 import com.xiongdwm.fiberGDB.resources.RoutePointResources;
-import com.xiongdwm.fiberGDB.resources.impl.RoutePointResourcesImpl;
+import com.xiongdwm.fiberGDB.support.BeanContext;
 import com.xiongdwm.fiberGDB.support.FacilityStage;
+import com.xiongdwm.fiberGDB.support.binlogSync.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.core.schema.RelationshipProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.ApplicationContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Map;
 
-@Component
-public class GenericTableEventHandler<T> implements TableEventHandler<T> {
 
-    @Autowired
-    private RoutePointResources pointResources;
+public record GenericTableEventHandler<T>(Class<T> entityClass,
+                                          Map<String, Integer> columnIndexMap) implements TableEventHandler<T> {
 
-    public final Class<T> entityClass;
-    public final Map<String, Integer> columnIndexMap;
-
-    public GenericTableEventHandler(Class<T> entityClass, Map<String, Integer> columnIndexMap) {
-        this.entityClass=entityClass;
-        this.columnIndexMap=columnIndexMap;
-    }
 
     @Override
     public void handleInsertEvent(T entity) {
+        ApplicationContext context= BeanContext.getApplicationContext();
+        RoutePointResources pointResources=context.getBean(RoutePointResources.class);
         if (entity instanceof RoutePointEntityRDB dto) {
-            RoutePoint routePoint=new RoutePoint();
-            BeanUtils.copyProperties(dto,routePoint);
+            RoutePoint routePoint = new RoutePoint();
+            BeanUtils.copyProperties(dto, routePoint);
+            routePoint.setType(RoutePoint.RoutePointType.valueOf(dto.getType()));
+            routePoint.setExist(FacilityStage.valueOf(dto.getExist()));
             pointResources.save(routePoint);
-        }else if(entity instanceof FiberEntityRDB dto){
-            Fiber fiber=new Fiber();
-            BeanUtils.copyProperties(dto,fiber);
-            fiber.setStage(dto.getExists().getText());
-            double weight=dto.getExists().getCode()<0?99d: FacilityStage.getHalf().contains(dto.getExists())?0.5d:1d;
+        } else if (entity instanceof FiberEntityRDB dto) {
+            Fiber fiber = new Fiber();
+            BeanUtils.copyProperties(dto, fiber);
+            FacilityStage existsEnum=FacilityStage.valueOf(dto.getExists());
+            fiber.setStage(existsEnum.getText());
+            double weight = existsEnum.getCode() < 0 ? 99d : FacilityStage.getHalf().contains(existsEnum) ? 0.5d : 1d;
             fiber.setWeight(weight);
             pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(), fiber);
         }
@@ -61,9 +56,11 @@ public class GenericTableEventHandler<T> implements TableEventHandler<T> {
     }
 
     public void handleInsertEvent(WriteRowsEventData data) {
+//        System.out.println("insert!!");
         for (Serializable[] row : data.getRows()) {
+//            System.out.println(Arrays.toString(row));
             T entity = convertRowToEntity(row);
-            System.out.println(entity);
+//            System.out.println(entity);
             handleInsertEvent(entity);
         }
     }
@@ -88,10 +85,12 @@ public class GenericTableEventHandler<T> implements TableEventHandler<T> {
             for (Map.Entry<String, Integer> entry : columnIndexMap.entrySet()) {
                 String fieldName = entry.getKey();
                 int index = entry.getValue();
-                Field field = entityClass.getDeclaredField(fieldName);
+                String snake2camel= StringUtils.snakeToLowerCamelCase(fieldName);
+                Field field = entityClass.getDeclaredField(snake2camel);
                 field.setAccessible(true);
                 field.set(entity, row[index]);
             }
+
             return entity;
         } catch (Exception e) {
             throw new RuntimeException("Failed to convert row to entity", e);

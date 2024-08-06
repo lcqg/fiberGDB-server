@@ -8,7 +8,7 @@ public class FiberEntityRDB {
     private String name;
     private String no;
     private String level;
-    private FacilityStage exists;
+    private String exists;
     private double dis;
     private Long fromStationId;
     private Long toStationId;
@@ -45,11 +45,11 @@ public class FiberEntityRDB {
         this.level = level;
     }
 
-    public FacilityStage getExists() {
+    public String getExists() {
         return exists;
     }
 
-    public void setExists(FacilityStage exists) {
+    public void setExists(String exists) {
         this.exists = exists;
     }
 

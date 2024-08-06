@@ -11,17 +11,16 @@ public class RoutePointEntityRDB {
     private Double lat;
     private Double lng;
     private String address;
-    private RoutePoint.RoutePointType type;
+    private String type;
     private String gps84;
     private String icon;
-    private String street;
     private String area;
-    private String pics; //照片 逗号分隔
+    private String pics;
     private String level;
-    private Date upTime; //设施启用时间
-    private Long fromClient; //根据用户
-    private String qrCode; //二维码
-    private FacilityStage exist;
+    private Date upTime;
+    private Long fromClient;
+    private String qrCode;
+    private String exist;
     private Date updateTime;
 
     public Long getId() {
@@ -64,11 +63,11 @@ public class RoutePointEntityRDB {
         this.address = address;
     }
 
-    public RoutePoint.RoutePointType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(RoutePoint.RoutePointType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -88,13 +87,6 @@ public class RoutePointEntityRDB {
         this.icon = icon;
     }
 
-    public String getStreet() {
-        return street;
-    }
-
-    public void setStreet(String street) {
-        this.street = street;
-    }
 
     public String getArea() {
         return area;
@@ -144,11 +136,11 @@ public class RoutePointEntityRDB {
         this.qrCode = qrCode;
     }
 
-    public FacilityStage getExist() {
+    public String getExist() {
         return exist;
     }
 
-    public void setExist(FacilityStage exist) {
+    public void setExist(String exist) {
         this.exist = exist;
     }
 

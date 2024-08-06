@@ -88,7 +88,6 @@ public class BinlogSyncComponent {
         String fullTableName = tableMap.get(data.getTableId());
         if (fullTableName != null) {
             TableEventHandler<?> handler = handlers.get(fullTableName);
-            System.out.println(handler);
             if (handler != null) {
                 ((GenericTableEventHandler<?>) handler).handleInsertEvent(data);
             }

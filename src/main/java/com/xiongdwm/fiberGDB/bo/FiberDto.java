@@ -1,6 +1,5 @@
 package com.xiongdwm.fiberGDB.bo;
 
-import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
 import jakarta.validation.constraints.NotNull;
 
 public class FiberDto{

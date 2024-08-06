@@ -1,6 +1,7 @@
 package com.xiongdwm.fiberGDB.support.binlogSync;
 
 import com.xiongdwm.fiberGDB.bo.fiberRDB.FiberEntityRDB;
+import com.xiongdwm.fiberGDB.bo.fiberRDB.RoutePointEntityRDB;
 import com.xiongdwm.fiberGDB.support.binlogSync.manager.EntityColumnManager;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,14 @@ public class BinlogListenerInitializer {
 
     @PostConstruct
     public void initialize() throws IOException {
+        //entity's columns init
         entityColumnManager.initializeEntityColumns();
-        binlogSyncComponent.registerTableEventHandler("fiber", "fiber", FiberEntityRDB.class);
+
+        //registration of handlers
+        binlogSyncComponent.registerTableEventHandler("neo4j_data", "fiber", FiberEntityRDB.class);
+        binlogSyncComponent.registerTableEventHandler("neo4j_data", "route_point", RoutePointEntityRDB.class);
+        //todo add order to handlers, 'cause insert nodes should do before insert of relationships
+        //start sync
         binlogSyncComponent.startSync();
     }
 

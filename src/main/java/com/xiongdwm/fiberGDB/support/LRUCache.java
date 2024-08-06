@@ -64,7 +64,7 @@ public class LRUCache<K, V> {
         this.queue = new PriorityQueue<>();
     }
 
-    public synchronized V get(K key) {
+    public V get(K key) {
         CacheEntry<K, V> cacheEntry = map.get(key);
         if (cacheEntry == null) return null;
 
@@ -77,7 +77,7 @@ public class LRUCache<K, V> {
     }
 
     // put a new entry into the cache
-    public synchronized void put(K key, V value) {
+    public void put(K key, V value) {
         CacheEntry<K, V> cacheEntry = new CacheEntry<>(key, value, System.currentTimeMillis() + expireTimeLimit, 0L);
         //if the value already exists, update the value and renew the expire-time
         if (map.containsKey(key)) {
