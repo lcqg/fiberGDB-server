@@ -1,6 +1,5 @@
 package com.xiongdwm.fiberGDB.resources.impl;
 
-import com.xiongdwm.fiberGDB.bo.PathResult;
 import com.xiongdwm.fiberGDB.bo.RoutePointDTOProjection;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
@@ -9,16 +8,12 @@ import com.xiongdwm.fiberGDB.resources.RoutePointResources;
 import com.xiongdwm.fiberGDB.support.orm.helper.AbstractCypherHelper;
 import com.xiongdwm.fiberGDB.support.orm.helper.provider.CypherHelper;
 import jakarta.annotation.Resource;
-import org.neo4j.driver.Records;
-import org.neo4j.driver.Result;
-import org.neo4j.driver.internal.InternalResult;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class RoutePointResourcesImpl implements RoutePointResources {
@@ -57,20 +52,20 @@ public class RoutePointResourcesImpl implements RoutePointResources {
 
     @Override
     public List<LinkedList<RoutePointDTOProjection>> retrieve(Long startId,Long endId,double weightLimit){
-        List<RoutePointDTOProjection>queryResult=pointRepo.findResultByCypher(startId,endId,weightLimit).collectList().block();
-        System.out.println(queryResult);
-        if(null==queryResult||queryResult.isEmpty())return Collections.emptyList();
+        List<RoutePointDTOProjection>queryResult=pointRepo.findRoutesByCypher(startId,endId,weightLimit).collectList()
+                .blockOptional().orElse(Collections.emptyList());
+        if(queryResult.isEmpty())return Collections.emptyList();
         List<LinkedList<RoutePointDTOProjection>>result=new ArrayList<>();
         LinkedList<RoutePointDTOProjection> partialResult=new LinkedList<>();
         for(RoutePointDTOProjection r:queryResult) {
             if (r.getId().longValue() == endId.longValue()) {
+                partialResult.addLast(r);
                 result.add(partialResult);
-                partialResult = new LinkedList<>();
+                partialResult=new LinkedList<>();
+                continue;
             }
             partialResult.addLast(r);
         }
-
-        System.out.println(result);
         return result;
     }
 

@@ -1,6 +1,7 @@
 package com.xiongdwm.fiberGDB.bo;
 
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
+import com.xiongdwm.fiberGDB.support.FacilityStage;
 import jakarta.validation.constraints.NotNull;
 
 public class RoutePointDTOProjection {
@@ -12,7 +13,7 @@ public class RoutePointDTOProjection {
     private Double lat;
     private RoutePoint.RoutePointType type;
     private String level;
-    private String exist;
+    private FacilityStage exist;
 
     public Long getId() {
         return id;
@@ -78,11 +79,11 @@ public class RoutePointDTOProjection {
         this.level = level;
     }
 
-    public String getExist() {
+    public FacilityStage getExist() {
         return exist;
     }
 
-    public void setExist(String exist) {
+    public void setExist(FacilityStage exist) {
         this.exist = exist;
     }
 

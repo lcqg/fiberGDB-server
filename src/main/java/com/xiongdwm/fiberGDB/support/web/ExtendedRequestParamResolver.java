@@ -75,7 +75,6 @@ public class ExtendedRequestParamResolver extends RequestParamMethodArgumentReso
         return arg;
     }
 
-    // 基本类型解析
     private Object parsePrimitive(String parameterTypeName, Object value) {
         if (value == null)
             return null;
@@ -115,7 +114,6 @@ public class ExtendedRequestParamResolver extends RequestParamMethodArgumentReso
         return null;
     }
 
-    // 基本类型包装类型解析
     private Object parseBasicTypeWrapper(Class<?> parameterType, Object value) {
         if (value == null) {
             return null;

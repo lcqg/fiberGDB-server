@@ -1,19 +1,13 @@
 package com.xiongdwm.fiberGDB.entities;
 
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
+import com.xiongdwm.fiberGDB.support.FacilityStage;
 import jakarta.validation.constraints.NotNull;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.Result;
-import org.neo4j.driver.exceptions.NoSuchRecordException;
-import org.neo4j.driver.summary.ResultSummary;
 import org.springframework.data.neo4j.core.schema.*;
 
-import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
-@Node
+@Node("RoutePoint")
 public class RoutePoint {
     @Id
     private @NotNull Long id;
@@ -24,7 +18,7 @@ public class RoutePoint {
     private Double lat;
     private RoutePointType type;
     private String level;
-    private String exist;
+    private FacilityStage exist;
     @Relationship(type = "fiber", direction = Relationship.Direction.OUTGOING)
     private Set<Fiber> cables;
 
@@ -113,11 +107,11 @@ public class RoutePoint {
         this.level = level;
     }
 
-    public String getExist() {
+    public FacilityStage getExist() {
         return exist;
     }
 
-    public void setExist(String exist) {
+    public void setExist(FacilityStage exist) {
         this.exist = exist;
     }
 

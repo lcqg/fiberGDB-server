@@ -23,7 +23,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'com.gitee.Jmysy:binlog4j-spring-boot-starter:1.9.1'
+	implementation 'com.github.shyiko:mysql-binlog-connector-java:0.21.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
