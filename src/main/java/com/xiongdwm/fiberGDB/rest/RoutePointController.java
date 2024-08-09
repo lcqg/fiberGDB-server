@@ -1,6 +1,7 @@
 package com.xiongdwm.fiberGDB.rest;
 
 import com.xiongdwm.fiberGDB.bo.FiberDto;
+import com.xiongdwm.fiberGDB.bo.requestEntity.SearchRouteParam;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
 import com.xiongdwm.fiberGDB.resources.RoutePointResources;
@@ -46,7 +47,6 @@ public class RoutePointController {
     }
     @RequestMapping("/point/add")
     public Object save(RoutePoint p) {
-        System.out.println(p.toString());
         Map<String, Object> map = new HashMap<>();
         map.put("code", 200);
         map.put("msg", routePointResources.save(p));
@@ -63,7 +63,7 @@ public class RoutePointController {
     }
 
     @RequestMapping("/rel/searchRoute")
-    public Object searchRoute(){
-        return View.getSuccess(routePointResources.retrieve(123L,12367L, 3));
+    public Object searchRoute(SearchRouteParam param){
+        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight()));
     }
 }

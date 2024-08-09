@@ -8,21 +8,20 @@ import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 
 import org.springframework.data.neo4j.repository.query.Query;
+import reactor.core.publisher.Mono;
 
 public interface RoutePointRepo extends ReactiveNeo4jRepository<RoutePoint, Long> {
-    @Query("MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER*]-(end:RoutePoint {id: $endId}) " +
+    @Query("MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER_CONCLUSION*1..5]-(end:RoutePoint {id: $endId}) " +
             "WHERE start <> end AND " +
             "NONE(node IN nodes(p)[1..-1] WHERE node = start) AND "+
             "REDUCE (sum=0, rel IN relationships(p) | sum + rel.weight) <= $weightLimit "+
-            "RETURN nodes(p) AS routes")
+            "RETURN nodes(p) AS routes "+
+            "ORDER BY length(p) ASC " +
+            "LIMIT 5")
    Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId")Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit);
 
-//    default List<Result> getPath(long startId, long endId, List<String> typeOfs, double weightLimit) {
-//        System.out.println(startId);
-//        System.out.println(endId);
-//        Mono<List<Result>> mono=findResultByCypher(startId,endId,weightLimit).collectList();
-//        List<Result>rs=mono.block();
-//        System.out.println(rs);
-//       return rs;
-//    }
+    @Query("MATCH (p1:RoutePoint)-[r:FIBER]->(p2:RoutePoint) " +
+            "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context " +
+            "MERGE (p1)-[newRel:FIBER_CONCLUSION {weight: minWeight, context: context}]->(p2)")
+    Mono<Void> s();
 }

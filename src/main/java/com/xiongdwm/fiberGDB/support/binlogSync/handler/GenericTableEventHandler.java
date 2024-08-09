@@ -42,6 +42,7 @@ public record GenericTableEventHandler<T>(Class<T> entityClass,
             double weight = existsEnum.getCode() < 0 ? 99d : FacilityStage.getHalf().contains(existsEnum) ? 0.5d : 1d;
             fiber.setWeight(weight);
             pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(), fiber);
+//            System.out.println("add fiber");
         }
     }
 

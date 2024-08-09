@@ -47,7 +47,6 @@ public class BinlogSyncComponent {
 
     public void startSync() throws IOException {
         BinlogPositionManager.BinlogPosition binlogPosition = BinlogPositionManager.loadPosition();
-
         client = new BinaryLogClient(hostname, port, username, password);
         System.out.println("=================connected to binlog client=================>>>>");
         if (binlogPosition == null) return;
@@ -66,7 +65,6 @@ public class BinlogSyncComponent {
             }
             BinlogPositionManager.savePosition(client.getBinlogFilename(), client.getBinlogPosition());
         });
-
         //unblocking
         new Thread(()->{
             try {
@@ -88,9 +86,8 @@ public class BinlogSyncComponent {
         String fullTableName = tableMap.get(data.getTableId());
         if (fullTableName != null) {
             TableEventHandler<?> handler = handlers.get(fullTableName);
-            if (handler != null) {
-                ((GenericTableEventHandler<?>) handler).handleInsertEvent(data);
-            }
+            if(handler==null)return;
+            ((GenericTableEventHandler<?>) handler).handleInsertEvent(data);
         }
     }
 
@@ -125,6 +122,7 @@ public class BinlogSyncComponent {
     public void stopSync() throws IOException {
         if (client != null && client.isConnected()) {
             client.disconnect();
+            System.out.println("===================stop sync======================>>");
         }
     }
 

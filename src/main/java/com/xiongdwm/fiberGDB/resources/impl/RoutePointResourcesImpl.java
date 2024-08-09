@@ -30,13 +30,9 @@ public class RoutePointResourcesImpl implements RoutePointResources {
 
         return Mono.zip(fromPoint,toPoint).flatMap(t->{
             RoutePoint from=t.getT1();
-            System.out.println(from);
             RoutePoint to=t.getT2();
-            System.out.println(to);
             fiber.setTowards(to);
-            System.out.println(fiber.toString());
             from.addCable(fiber);
-            System.out.println(from.getCables());
 
             return pointRepo.save(from)
                     .then()
@@ -54,6 +50,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     public List<LinkedList<RoutePointDTOProjection>> retrieve(Long startId,Long endId,double weightLimit){
         List<RoutePointDTOProjection>queryResult=pointRepo.findRoutesByCypher(startId,endId,weightLimit).collectList()
                 .blockOptional().orElse(Collections.emptyList());
+        System.out.println(queryResult);
         if(queryResult.isEmpty())return Collections.emptyList();
         List<LinkedList<RoutePointDTOProjection>>result=new ArrayList<>();
         LinkedList<RoutePointDTOProjection> partialResult=new LinkedList<>();

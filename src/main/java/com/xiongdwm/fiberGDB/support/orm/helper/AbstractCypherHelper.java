@@ -52,6 +52,6 @@ public abstract class AbstractCypherHelper<T>{
 
     protected void query(String cypher) {
         Collection<Map<String, Object>> o=neo4jClient.query(cypher).fetch().all();
-        System.out.println(new ArrayList<>(o));
+//        System.out.println(new ArrayList<>(o));
     }
 }

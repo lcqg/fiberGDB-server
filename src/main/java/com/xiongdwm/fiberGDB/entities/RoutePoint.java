@@ -1,6 +1,7 @@
 package com.xiongdwm.fiberGDB.entities;
 
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
+import com.xiongdwm.fiberGDB.entities.relationship.FiberConclusion;
 import com.xiongdwm.fiberGDB.support.FacilityStage;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.neo4j.core.schema.*;
@@ -19,8 +20,10 @@ public class RoutePoint {
     private RoutePointType type;
     private String level;
     private FacilityStage exist;
-    @Relationship(type = "fiber", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "FIBER", direction = Relationship.Direction.OUTGOING)
     private Set<Fiber> cables;
+    @Relationship(type="FIBER_CONCLUSION",direction = Relationship.Direction.OUTGOING)
+    private Set<FiberConclusion> conclusions;
 
     public enum RoutePointType{
         STATION("机房"),
