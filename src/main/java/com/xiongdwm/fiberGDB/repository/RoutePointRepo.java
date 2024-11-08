@@ -20,8 +20,9 @@ public interface RoutePointRepo extends ReactiveNeo4jRepository<RoutePoint, Long
             "LIMIT 5")
    Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId")Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit);
 
+    // 整合fiber数据 两点之间的所有光缆合并
     @Query("MATCH (p1:RoutePoint)-[r:FIBER]->(p2:RoutePoint) " +
             "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context " +
             "MERGE (p1)-[newRel:FIBER_CONCLUSION {weight: minWeight, context: context}]->(p2)")
-    Mono<Void> s();
+    Mono<Void> mergeFiber();
 }
