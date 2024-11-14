@@ -61,7 +61,7 @@ public record GenericTableEventHandler<T>(Class<T> entityClass,
         for (Serializable[] row : data.getRows()) {
 //            System.out.println(Arrays.toString(row));
             T entity = convertRowToEntity(row);
-//            System.out.println(entity);
+            System.out.println(entity);
             handleInsertEvent(entity);
         }
     }

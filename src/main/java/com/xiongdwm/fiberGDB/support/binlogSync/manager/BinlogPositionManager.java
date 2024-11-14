@@ -19,6 +19,8 @@ public class BinlogPositionManager {
         File file = new File(POSITION_FILE);
         if (!file.exists()) {
             System.out.println("position NOT FOUND");
+            savePosition("binlog.000439", 0L);
+            System.out.println("file created");
             return null;
         }
         try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {

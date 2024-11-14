@@ -26,3 +26,33 @@ public interface RoutePointRepo extends ReactiveNeo4jRepository<RoutePoint, Long
             "MERGE (p1)-[newRel:FIBER_CONCLUSION {weight: minWeight, context: context}]->(p2)")
     Mono<Void> mergeFiber();
 }
+/**
+ * Currently, the BeanUtils.copyProperties method in Apache Commons BeanUtils copies all properties from the source object to the target object, including null values. This behavior can lead to unintended overwriting of existing values in the target object when the source object has null properties.
+ *
+ * **Scenario**:
+ * When updating an entity, only a subset of properties may be provided (e.g., only the name property is provided, while other properties like age are null). In such cases, copying all properties including null values will overwrite the existing values in the target object, which is not desirable.
+ *
+ * **Purpose**:
+ * To enhance the BeanUtils.copyProperties method to support copying only non-null properties from the source object to the target object. This feature will prevent null values from overwriting existing values in the target object, ensuring that only the provided properties are updated.
+ *
+ * **Proposed Solution**:
+ * Implement a new method, copyNonNullProperties, that iterates over the source object's properties and copies only those that are non-null to the target object.
+ */
+/**
+ * Dear BeanUtils Maintainers,
+ *
+ * I hope this message finds you well. I am writing to express my interest in contributing to the BeanUtils library. I have been using this library extensively in my projects and have found it incredibly useful. As a way to give back to the community, I would like to propose an enhancement to the library.
+ *
+ * **Proposal**:
+ * I would like to add a new method, `copyNonNullProperties`, to the BeanUtils library. This method will copy only non-null properties from the source object to the target object. The primary benefit of this method is to prevent null values from overwriting existing values in the target object, which is particularly useful in scenarios where partial updates are performed.
+ *
+ * **Use Case**:
+ * For example, when updating an entity, only a subset of properties may be provided (e.g., only the name property is provided, while other properties like age are null). In such cases, copying all properties including null values will overwrite the existing values in the target object, which is not desirable. The `copyNonNullProperties` method will address this issue by ensuring that only the provided properties are updated.
+ *
+ * I am eager to contribute to the BeanUtils library and hope to make more contributions to the community in the future. I kindly request your consideration and approval for this enhancement.
+ *
+ * Thank you for your time and attention.
+ *
+ * Best regards,
+ * [Your Name]
+ */
