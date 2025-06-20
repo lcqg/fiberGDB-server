@@ -22,15 +22,14 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     @Resource
     private Neo4jClient neo4jClient;
 
-
     @Override
-    public Mono<Void> createFiber(Long fromId,Long toId,Fiber fiber) {
-        Mono<RoutePoint>fromPoint=pointRepo.findById(fromId);
-        Mono<RoutePoint>toPoint=pointRepo.findById(toId);
+    public Mono<Void> createFiber(Long fromId, Long toId, Fiber fiber) {
+        Mono<RoutePoint> fromPoint = pointRepo.findById(fromId);
+        Mono<RoutePoint> toPoint = pointRepo.findById(toId);
 
-        return Mono.zip(fromPoint,toPoint).flatMap(t->{
-            RoutePoint from=t.getT1();
-            RoutePoint to=t.getT2();
+        return Mono.zip(fromPoint, toPoint).flatMap(t -> {
+            RoutePoint from = t.getT1();
+            RoutePoint to = t.getT2();
             fiber.setTowards(to);
             from.addCable(fiber);
 
@@ -39,7 +38,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
                     .onErrorResume(e -> {
                         System.err.println("Error saving point: " + e.getMessage());
                         return Mono.empty();
-            });
+                    });
         }).onErrorResume(e -> {
             System.err.println("Error creating fiber: " + e.getMessage());
             return Mono.empty();
@@ -47,32 +46,52 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     }
 
     @Override
-    public List<LinkedList<RoutePointDTOProjection>> retrieve(Long startId,Long endId,double weightLimit, int routeCounts) {
-        List<LinkedList<RoutePointDTOProjection>> queryResult=pointRepo.findRoutesByCypher(startId,endId,weightLimit).collectList()
+    public List<List<RoutePointDTOProjection>> retrieve(Long startId, Long endId, double weightLimit, int routeCounts) {
+        List<RoutePointDTOProjection> queryResult = pointRepo
+                .findRoutesByCypher(startId, endId, weightLimit, routeCounts)
+                .collectList()
                 .blockOptional().orElse(Collections.emptyList());
-        System.out.println(queryResult);
-        if(queryResult.size()<routeCounts){
-            //查找附近的点
-            List<RoutePointDTOProjection>nearbyPoints=pointRepo.findRoutPointInDistanceWithNoConnection(startId, 500.0)
+        System.out.println(queryResult.size());
+        LinkedList<List<RoutePointDTOProjection>> result = new LinkedList<>();
+        if(!queryResult.isEmpty()){
+            List<RoutePointDTOProjection> partial = new ArrayList<>();
+            for (RoutePointDTOProjection node : queryResult) {
+                partial.add(node);
+                if (node.getId().longValue() == endId.longValue()) {
+                    result.addLast((new ArrayList<>(partial)));
+                    partial.clear();
+                }
+            }
+        }
+        result.forEach(it->{
+            System.out.println(it);
+            System.out.println("-----------------");
+        });
+        // 通过endId分割成多条路径
+        if (queryResult.size() < routeCounts) {
+            // 查找附近的点
+            List<RoutePointDTOProjection> nearbyPoints = pointRepo
+                    .findRoutPointInDistanceWithNoConnection(startId, 500.0)
                     .collectList().blockOptional().orElse(Collections.emptyList());
-            if(nearbyPoints.isEmpty())return Collections.emptyList();
-            var remain= routeCounts - queryResult.size();
-            for(RoutePointDTOProjection nearby:nearbyPoints) {
-                if(remain<=0)break;
-                if(nearby.getId().longValue()==endId.longValue())continue;
-                List<RoutePointDTOProjection> list= pointRepo.bfsFlux(startId, nearby.getId(), weightLimit)
+            if (nearbyPoints.isEmpty())
+                return Collections.emptyList();
+            var remain = routeCounts - queryResult.size();
+            for (RoutePointDTOProjection nearby : nearbyPoints) {
+                if (remain <= 0)
+                    break;
+                if (nearby.getId().longValue() == endId.longValue())
+                    continue;
+                List<RoutePointDTOProjection> list = pointRepo.bfsFlux(startId, nearby.getId(), weightLimit)
                         .collectList().blockOptional().orElse(Collections.emptyList());
-                LinkedList<RoutePointDTOProjection> list2=new LinkedList<>(list);
-                if(list2.isEmpty())continue;
-                queryResult.add(list2);
+                if (list.isEmpty())
+                    continue;
+                result.addLast(list);
                 remain--;
             }
 
         }
-        return queryResult;
+        return result;
     }
-
-
 
     @Override
     public Long save(RoutePoint point) {
@@ -81,10 +100,11 @@ public class RoutePointResourcesImpl implements RoutePointResources {
 
     @Override
     public void createFiberNoneReactive(Long fromId, Long toId, Fiber fiber) {
-        RoutePoint fromPoint=pointRepo.findById(fromId).blockOptional().orElse(null);
-        RoutePoint toPoint=pointRepo.findById(toId).blockOptional().orElse(null);
-        if(fromPoint==null||toPoint==null)return;
-        CypherHelper<Fiber>fiberRepo= new CypherHelper<Fiber>(neo4jClient);
-        fiberRepo.createRelationship(fromPoint,toPoint,fiber, AbstractCypherHelper.RelationshipType.DIRECTED);
+        RoutePoint fromPoint = pointRepo.findById(fromId).blockOptional().orElse(null);
+        RoutePoint toPoint = pointRepo.findById(toId).blockOptional().orElse(null);
+        if (fromPoint == null || toPoint == null)
+            return;
+        CypherHelper<Fiber> fiberRepo = new CypherHelper<Fiber>(neo4jClient);
+        fiberRepo.createRelationship(fromPoint, toPoint, fiber, AbstractCypherHelper.RelationshipType.DIRECTED);
     }
 }
