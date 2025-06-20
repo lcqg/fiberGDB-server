@@ -2,10 +2,8 @@ package com.xiongdwm.fiberGDB.support.orm.helper;
 
 
 import com.xiongdwm.fiberGDB.support.orm.entity.iInterfaces.DynamicPrinciple;
-import org.neo4j.driver.Driver;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

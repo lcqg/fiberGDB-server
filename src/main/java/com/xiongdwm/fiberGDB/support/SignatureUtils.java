@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.sql.SQLOutput;
 import java.util.Base64;
 
 @Component

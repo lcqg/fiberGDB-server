@@ -8,6 +8,8 @@ import com.xiongdwm.fiberGDB.resources.RoutePointResources;
 import com.xiongdwm.fiberGDB.support.RSAUtils;
 import com.xiongdwm.fiberGDB.support.View;
 import com.xiongdwm.fiberGDB.support.serialize.JacksonUtil;
+
+
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,17 +28,17 @@ public class RoutePointController {
     @RequestMapping("/web/init")
     public Object init() throws Exception {
         System.out.println("=================init=========================");
-        Map<String,Object> map=new HashMap<>();
-        map.put("code",200);
-        map.put("msg","success");
+        Map<String, Object> map = new HashMap<>();
+        map.put("code", 200);
+        map.put("msg", "success");
         return JacksonUtil.mapToNode(map);
     }
 
     @RequestMapping("/web/getSignature")
     public Object getSignature(String info) throws Exception {
-        Map<String,Object>map=new HashMap<>();
-        map.put("code",200);
-        map.put("msg",rsaUtils.decrypt(info)+"===================="+info);
+        Map<String, Object> map = new HashMap<>();
+        map.put("code", 200);
+        map.put("msg", rsaUtils.decrypt(info) + "====================" + info);
         return JacksonUtil.mapToNode(map);
     }
 
@@ -45,6 +47,7 @@ public class RoutePointController {
         System.out.println(ak);
         return View.SUCCESS;
     }
+
     @RequestMapping("/point/add")
     public Object save(RoutePoint p) {
         Map<String, Object> map = new HashMap<>();
@@ -54,16 +57,16 @@ public class RoutePointController {
     }
 
     @RequestMapping("/rel/add")
-    public Object saveRel(FiberDto fiberDto){
-//        routePointResources.createFiber(fiberDto.getFromId(),fiberDto.getToId(),fiberDto.getFiber()).block();
-        Fiber fiber=new Fiber();
-        BeanUtils.copyProperties(fiberDto,fiber);
-        routePointResources.createFiberNoneReactive(fiberDto.getFromId(),fiberDto.getToId(),fiber);
+    public Object saveRel(FiberDto fiberDto) {
+        // routePointResources.createFiber(fiberDto.getFromId(),fiberDto.getToId(),fiberDto.getFiber()).block();
+        Fiber fiber = new Fiber();
+        BeanUtils.copyProperties(fiberDto, fiber);
+        routePointResources.createFiberNoneReactive(fiberDto.getFromId(), fiberDto.getToId(), fiber);
         return View.SUCCESS;
     }
 
     @RequestMapping("/rel/searchRoute")
-    public Object searchRoute(SearchRouteParam param){
-        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight()));
+    public Object searchRoute(SearchRouteParam param) {
+        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount()));
     }
 }

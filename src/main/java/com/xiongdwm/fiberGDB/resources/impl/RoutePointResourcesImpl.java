@@ -47,10 +47,27 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     }
 
     @Override
-    public List<LinkedList<RoutePointDTOProjection>> retrieve(Long startId,Long endId,double weightLimit){
+    public List<LinkedList<RoutePointDTOProjection>> retrieve(Long startId,Long endId,double weightLimit, int routeCounts) {
         List<RoutePointDTOProjection>queryResult=pointRepo.findRoutesByCypher(startId,endId,weightLimit).collectList()
                 .blockOptional().orElse(Collections.emptyList());
         System.out.println(queryResult);
+        if(queryResult.size()<routeCounts){
+            //查找附近的点
+            List<RoutePointDTOProjection>nearbyPoints=pointRepo.findRoutPointInDistanceWithNoConnection(startId, 500.0)
+                    .collectList().blockOptional().orElse(Collections.emptyList());
+            if(nearbyPoints.isEmpty())return Collections.emptyList();
+            var remain= routeCounts - queryResult.size();
+            for(RoutePointDTOProjection nearby:nearbyPoints) {
+                if(remain<=0)break;
+                if(nearby.getId().longValue()==endId.longValue())continue;
+                List<RoutePointDTOProjection> list= pointRepo.bfsFlux(startId, nearby.getId(), weightLimit)
+                        .collectList().blockOptional().orElse(Collections.emptyList());
+                if(list.isEmpty())continue;
+                queryResult.addAll(list);
+                remain--;
+            }
+
+        }
         if(queryResult.isEmpty())return Collections.emptyList();
         List<LinkedList<RoutePointDTOProjection>>result=new ArrayList<>();
         LinkedList<RoutePointDTOProjection> partialResult=new LinkedList<>();

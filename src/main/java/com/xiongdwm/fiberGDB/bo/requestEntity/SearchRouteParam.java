@@ -1,6 +1,6 @@
 package com.xiongdwm.fiberGDB.bo.requestEntity;
 
-public record SearchRouteParam(Long startId, Long endId, double weight) {
+public record SearchRouteParam(Long startId, Long endId, double weight, int routeCount) {
     @Override
     public Long startId() {
         return startId;
@@ -13,6 +13,10 @@ public record SearchRouteParam(Long startId, Long endId, double weight) {
 
     @Override
     public double weight() {
-        return weight==0.0?4.0d:weight;
+        return weight==0.0?5.0d:weight;
+    }
+    @Override
+    public int routeCount() {
+        return routeCount==0?5:routeCount;
     }
 }
