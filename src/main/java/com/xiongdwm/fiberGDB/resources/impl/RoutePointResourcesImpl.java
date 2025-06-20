@@ -48,7 +48,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
 
     @Override
     public List<LinkedList<RoutePointDTOProjection>> retrieve(Long startId,Long endId,double weightLimit, int routeCounts) {
-        List<RoutePointDTOProjection>queryResult=pointRepo.findRoutesByCypher(startId,endId,weightLimit).collectList()
+        List<LinkedList<RoutePointDTOProjection>> queryResult=pointRepo.findRoutesByCypher(startId,endId,weightLimit).collectList()
                 .blockOptional().orElse(Collections.emptyList());
         System.out.println(queryResult);
         if(queryResult.size()<routeCounts){
@@ -62,25 +62,14 @@ public class RoutePointResourcesImpl implements RoutePointResources {
                 if(nearby.getId().longValue()==endId.longValue())continue;
                 List<RoutePointDTOProjection> list= pointRepo.bfsFlux(startId, nearby.getId(), weightLimit)
                         .collectList().blockOptional().orElse(Collections.emptyList());
-                if(list.isEmpty())continue;
-                queryResult.addAll(list);
+                LinkedList<RoutePointDTOProjection> list2=new LinkedList<>(list);
+                if(list2.isEmpty())continue;
+                queryResult.add(list2);
                 remain--;
             }
 
         }
-        if(queryResult.isEmpty())return Collections.emptyList();
-        List<LinkedList<RoutePointDTOProjection>>result=new ArrayList<>();
-        LinkedList<RoutePointDTOProjection> partialResult=new LinkedList<>();
-        for(RoutePointDTOProjection r:queryResult) {
-            if (r.getId().longValue() == endId.longValue()) {
-                partialResult.addLast(r);
-                result.add(partialResult);
-                partialResult=new LinkedList<>();
-                continue;
-            }
-            partialResult.addLast(r);
-        }
-        return result;
+        return queryResult;
     }
 
 

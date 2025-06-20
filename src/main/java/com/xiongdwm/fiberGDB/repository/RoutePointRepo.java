@@ -3,6 +3,9 @@ package com.xiongdwm.fiberGDB.repository;
 import com.xiongdwm.fiberGDB.bo.RoutePointDTOProjection;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 
+import java.util.LinkedList;
+
+
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
@@ -18,7 +21,7 @@ public interface RoutePointRepo extends ReactiveNeo4jRepository<RoutePoint, Long
             "RETURN nodes(p) AS routes "+
             "ORDER BY length(p) ASC " +
             "LIMIT 5")
-   Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId")Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit);
+   Flux<LinkedList<RoutePointDTOProjection>> findRoutesByCypher(@Param("startId")Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit);
 
     // 整合fiber数据 两点之间的所有光缆合并
     @Query("MATCH (p1:RoutePoint)-[r:FIBER]->(p2:RoutePoint) " +
