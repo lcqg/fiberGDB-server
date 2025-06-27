@@ -1,6 +1,16 @@
 package com.xiongdwm.fiberGDB.bo.requestEntity;
 
-public record SearchRouteParam(Long startId, Long endId, double weight, int routeCount) {
+import io.micrometer.common.lang.Nullable;
+
+public record SearchRouteParam(
+    Long startId, 
+    Long endId, 
+    double weight, 
+    @Nullable int routeCount,
+    @Nullable double maxDistance,
+    @Nullable String type, 
+    @Nullable String resourceType) {
+
     @Override
     public Long startId() {
         return startId;
@@ -19,4 +29,10 @@ public record SearchRouteParam(Long startId, Long endId, double weight, int rout
     public int routeCount() {
         return routeCount==0?5:routeCount;
     }
+
+    @Override
+    public double maxDistance() {
+        return maxDistance==0.0?100.0d:maxDistance;
+    }
+
 }

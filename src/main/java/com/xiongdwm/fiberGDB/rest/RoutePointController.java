@@ -48,6 +48,7 @@ public class RoutePointController {
         return View.SUCCESS;
     }
 
+
     @RequestMapping("/point/add")
     public Object save(RoutePoint p) {
         Map<String, Object> map = new HashMap<>();
@@ -67,6 +68,11 @@ public class RoutePointController {
 
     @RequestMapping("/rel/searchRoute")
     public Object searchRoute(SearchRouteParam param) {
-        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount()));
+        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance()));
+    }
+
+    @RequestMapping("/rel/streaming/searchRoute")
+    public Object streamingSearchRoute(SearchRouteParam param) {
+        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance()));
     }
 }

@@ -13,6 +13,9 @@ public class FiberConclusion {
     private Long id;
     private String context;
     private double weight;
+    private String typeSet;
+    private double maxDis;
+    private double minDis;
     @TargetNode
     private RoutePoint towards;
 
@@ -47,4 +50,30 @@ public class FiberConclusion {
     public void setTowards(RoutePoint towards) {
         this.towards = towards;
     }
+
+    public String getTypeSet() {
+        return typeSet;
+    }
+
+    public void setTypeSet(String typeSet) {
+        this.typeSet = typeSet;
+    }
+
+    public double getMaxDis() {
+        return maxDis;
+    }
+
+    public void setMaxDis(double maxDis) {
+        this.maxDis = maxDis;
+    }
+
+    public double getMinDis() {
+        return minDis;
+    }
+
+    public void setMinDis(double minDis) {
+        this.minDis = minDis;
+    }
+
+    
 }

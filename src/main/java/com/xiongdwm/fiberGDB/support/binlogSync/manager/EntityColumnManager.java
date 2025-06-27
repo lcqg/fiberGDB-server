@@ -30,6 +30,7 @@ public class EntityColumnManager {
         fiberColumnIndexMap.put("id", 0);
         fiberColumnIndexMap.put("name", 1);
         fiberColumnIndexMap.put("from_station_id",24);
+        fiberColumnIndexMap.put("dis",14);
         fiberColumnIndexMap.put("to_station_id",27);
         fiberColumnIndexMap.put("exists",36);
         return fiberColumnIndexMap;

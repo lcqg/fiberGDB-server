@@ -1,16 +1,21 @@
 package com.xiongdwm.fiberGDB.resources.impl;
 
+import com.xiongdwm.fiberGDB.bo.PathResult;
 import com.xiongdwm.fiberGDB.bo.RoutePointDTOProjection;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
-import com.xiongdwm.fiberGDB.repository.RoutePointRepo;
+import com.xiongdwm.fiberGDB.repository.RoutePointRepository;
 import com.xiongdwm.fiberGDB.resources.RoutePointResources;
+import com.xiongdwm.fiberGDB.support.GpsUtils;
 import com.xiongdwm.fiberGDB.support.orm.helper.AbstractCypherHelper;
 import com.xiongdwm.fiberGDB.support.orm.helper.provider.CypherHelper;
 import jakarta.annotation.Resource;
+
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -18,7 +23,7 @@ import java.util.*;
 @Service
 public class RoutePointResourcesImpl implements RoutePointResources {
     @Resource
-    private RoutePointRepo pointRepo;
+    private RoutePointRepository pointRepo;
     @Resource
     private Neo4jClient neo4jClient;
 
@@ -46,51 +51,67 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     }
 
     @Override
-    public List<List<RoutePointDTOProjection>> retrieve(Long startId, Long endId, double weightLimit, int routeCounts) {
+    public List<PathResult> retrieve(Long startId, Long endId, double weightLimit, int routeCounts,double maxDistance) {
         List<RoutePointDTOProjection> queryResult = pointRepo
                 .findRoutesByCypher(startId, endId, weightLimit, routeCounts)
                 .collectList()
                 .blockOptional().orElse(Collections.emptyList());
         System.out.println(queryResult.size());
-        LinkedList<List<RoutePointDTOProjection>> result = new LinkedList<>();
-        if(!queryResult.isEmpty()){
+        LinkedList<PathResult> result = new LinkedList<>();
+        if (!queryResult.isEmpty()) {
             List<RoutePointDTOProjection> partial = new ArrayList<>();
             for (RoutePointDTOProjection node : queryResult) {
                 partial.add(node);
                 if (node.getId().longValue() == endId.longValue()) {
-                    result.addLast((new ArrayList<>(partial)));
+                    PathResult pathResult = new PathResult(new ArrayList<>(partial), true, 0.0d);
+                    result.addLast(pathResult);
                     partial.clear();
                 }
             }
         }
-        result.forEach(it->{
+        result.forEach(it -> {
             System.out.println(it);
             System.out.println("-----------------");
         });
-        // 通过endId分割成多条路径
+        
         if (queryResult.size() < routeCounts) {
-            // 查找附近的点
-            List<RoutePointDTOProjection> nearbyPoints = pointRepo
-                    .findRoutPointInDistanceWithNoConnection(startId, 500.0)
-                    .collectList().blockOptional().orElse(Collections.emptyList());
-            if (nearbyPoints.isEmpty())
-                return Collections.emptyList();
-            var remain = routeCounts - queryResult.size();
-            for (RoutePointDTOProjection nearby : nearbyPoints) {
-                if (remain <= 0)
-                    break;
-                if (nearby.getId().longValue() == endId.longValue())
-                    continue;
-                List<RoutePointDTOProjection> list = pointRepo.bfsFlux(startId, nearby.getId(), weightLimit)
-                        .collectList().blockOptional().orElse(Collections.emptyList());
-                if (list.isEmpty())
-                    continue;
-                result.addLast(list);
-                remain--;
-            }
-
+            System.out.println("================== start bfs search ==========================");
+            var remain=routeCounts - queryResult.size();
+            List<PathResult> fromStartBfs= bfs(endId, maxDistance, startId, remain);
+            List<PathResult> fromEndBfs= bfs(startId, maxDistance, endId, remain).stream().peek(it -> {
+                Collections.reverse(it.routes()); // 移除起点
+            }).toList();
+            fromStartBfs.addAll(fromEndBfs);
+            fromStartBfs.sort(Comparator.comparingDouble(PathResult::buildDistance));
+            if (fromStartBfs.size() > remain) fromStartBfs = fromStartBfs.subList(0, remain);
+            result.addAll(fromStartBfs);
         }
         return result;
+    }
+
+    public Flux<PathResult> retrieveFlux(Long startId, Long endId, double weightLimit, int routeCounts) {
+        Flux<RoutePointDTOProjection> mainPathFlux = pointRepo
+                .findRoutesByCypher(startId, endId, weightLimit, routeCounts);
+
+        Flux<PathResult> mainPaths = mainPathFlux
+                .bufferUntil(node -> node.getId().longValue() == endId.longValue())
+                .filter(list -> !list.isEmpty())
+                .map(list -> new PathResult(list, true, 0.0d));
+
+        Flux<RoutePointDTOProjection> nearbyPoints = pointRepo
+                .findRoutPointInDistanceWithNoConnection(startId, 500.0);
+
+        Flux<PathResult> nearbyPaths = nearbyPoints
+                .filter(nearby -> !nearby.getId().equals(endId))
+                .flatMap(nearby -> pointRepo.bfsFlux(nearby.getId(), endId)
+                        .collectList()
+                        .filter(list -> !list.isEmpty())
+                        .map(list -> new PathResult(list, false, 0.0d))
+                )
+                .take(routeCounts);
+
+        return Flux.concat(mainPaths, nearbyPaths)
+                .take(routeCounts);
     }
 
     @Override
@@ -106,5 +127,41 @@ public class RoutePointResourcesImpl implements RoutePointResources {
             return;
         CypherHelper<Fiber> fiberRepo = new CypherHelper<Fiber>(neo4jClient);
         fiberRepo.createRelationship(fromPoint, toPoint, fiber, AbstractCypherHelper.RelationshipType.DIRECTED);
+    }
+
+    private List<PathResult> bfs(Long target, double maxDistance,Long station,int remain) {
+            LinkedList<PathResult> result = new LinkedList<>();
+            RoutePoint stationPoint = pointRepo.findByPrimaryKey(station).blockOptional().orElse(null);
+            if (stationPoint == null) {
+                System.out.println("Start point not found: " + station);
+                return Collections.emptyList();
+            }
+            System.out.println(stationPoint.toString());
+            RoutePointDTOProjection projection=new RoutePointDTOProjection();
+            BeanUtils.copyProperties(stationPoint, projection);
+            List<RoutePointDTOProjection> nearbyPoints = pointRepo
+                    .findRoutPointInDistanceWithNoConnection(station, maxDistance)
+                    .collectList().blockOptional().orElse(Collections.emptyList());
+            System.out.println("nearbyPoints: " + nearbyPoints.size());
+            if (nearbyPoints.isEmpty())
+                return Collections.emptyList();
+            
+            System.out.println("remain: " + remain);
+            for (RoutePointDTOProjection nearby : nearbyPoints) {
+                if (remain <= 0)
+                    break;
+                if (nearby.getId().longValue() == target.longValue())
+                    continue;
+                List<RoutePointDTOProjection> list = pointRepo.bfsFlux(nearby.getId(), target)
+                        .collectList().blockOptional().orElse(Collections.emptyList());
+                if (list.isEmpty()) continue;
+                list.add(0, projection);
+                double dis= GpsUtils.getDistance(projection.getLng(),projection.getLat(),list.get(1).getLng(),list.get(1).getLat());
+                PathResult pathResult = new PathResult(list, false, dis);
+                result.addLast(pathResult);
+                remain--;
+            }
+
+        return result;
     }
 }

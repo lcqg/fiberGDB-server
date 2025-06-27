@@ -1,7 +1,5 @@
 package com.xiongdwm.fiberGDB.bo.fiberRDB;
 
-import com.xiongdwm.fiberGDB.support.FacilityStage;
-
 
 public class FiberEntityRDB {
     private Long id;
