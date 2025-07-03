@@ -27,7 +27,7 @@ public class CypherHelper<T> extends AbstractCypherHelper<T> {
     }
 
     @Override
-    public boolean createRelationship(Object start, Object end, T relationship, RelationshipType direction) {
+    public boolean createRelationship(Object start, Object end, T relationship, RelationshipType direction, OperationType operationType) {
         String relationshipType=relationship.getClass().getSimpleName().toUpperCase();
         String nodeLabel=start.getClass().getSimpleName();
         String fieldName=getIdFields(start);
@@ -54,9 +54,9 @@ public class CypherHelper<T> extends AbstractCypherHelper<T> {
 //                "CREATE(start)-[r:"+relationshipType+"{"+properties+"}]->(end)";
         String cypher=null;
         if (direction== RelationshipType.DIRECTED) {
-            cypher = cypherBuilder(nodeLabel,fieldName,startId,endId,relationshipType,properties, OperationType.CREATE, RelationshipType.DIRECTED);
+            cypher = cypherBuilder(nodeLabel,fieldName,startId,endId,relationshipType,properties, operationType, RelationshipType.DIRECTED);
         } else if(direction== RelationshipType.UNDIRECTED){
-            cypher = cypherBuilder(nodeLabel,fieldName,startId,endId,relationshipType,properties, OperationType.CREATE, RelationshipType.UNDIRECTED);
+            cypher = cypherBuilder(nodeLabel,fieldName,startId,endId,relationshipType,properties, operationType, RelationshipType.UNDIRECTED);
         }
         try {
             assert cypher!=null;
@@ -177,7 +177,7 @@ public class CypherHelper<T> extends AbstractCypherHelper<T> {
     }
 
     private String updateCypherBuilder(String nodeLabel, String fieldName, Object startId, Object endId,String relationship, String properties) {
-        return "MATCH(start:"+nodeLabel+"{"+fieldName+":"+startId+"})-[r:"+relationship+"]->(end:"+nodeLabel+"{"+fieldName+":"+endId+"}) SET r="+properties;
+        return "MATCH(start:"+nodeLabel+"{"+fieldName+":"+startId+"})-[r:"+relationship+"]->(end:"+nodeLabel+"{"+fieldName+":"+endId+"}) SET r={"+properties+"}";
     }
 
     private String createCypherBuilder(String nodeLabel, String fieldName, Object startId,Object endId, String relationship, String properties, RelationshipType direction) {

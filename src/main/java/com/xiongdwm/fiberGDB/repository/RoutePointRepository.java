@@ -20,7 +20,7 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
                         "RETURN nodes(p) AS routes " +
                         "ORDER BY length(p) ASC " +
                         "LIMIT $routesCount")
-        Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId") Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit, int routesCount);
+        Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId") Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit, @Param("routesCount") int routesCount);
 
         @Query("MATCH (p1:RoutePoint)-[r:FIBER]->(p2:RoutePoint) " +
                         "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context, COLLECT(r.type) AS typeSet, MAX(r.maxDis) AS maxDis, MIN(r.minDis) AS minDis "

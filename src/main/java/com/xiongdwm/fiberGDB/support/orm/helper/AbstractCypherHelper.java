@@ -41,7 +41,7 @@ public abstract class AbstractCypherHelper<T>{
         this.neo4jClient = neo4jClient;
     }
 
-    public abstract boolean createRelationship(Object start, Object end, T relationship, RelationshipType direction);
+    public abstract boolean createRelationship(Object start, Object end, T relationship, RelationshipType direction,OperationType operationType);
 
     public abstract int updateRelationship(Object start, Object end, T relationship);
 
