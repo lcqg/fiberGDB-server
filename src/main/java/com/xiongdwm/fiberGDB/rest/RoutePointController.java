@@ -71,8 +71,19 @@ public class RoutePointController {
         return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance()));
     }
 
-    @RequestMapping("/rel/streaming/searchRoute")
+    @RequestMapping("/rel/searchRouteByStationName")
     public Object streamingSearchRoute(SearchRouteParam param) {
-        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance()));
+        Long startId = param.startId();
+        Long endId = param.endId();
+        if(startId == null || endId == null) {
+            RoutePoint start = routePointResources.findRoutePointByName(param.fromStation());
+            RoutePoint end = routePointResources.findRoutePointByName(param.toStation());
+            if (start == null || end == null) {
+                return View.getError("起点或终点站点不存在");
+            }
+            startId = start.getId();
+            endId = end.getId();
+        }
+        return View.getSuccess(routePointResources.retrieve(startId, endId, param.weight(), param.routeCount(),param.maxDistance()));
     }
 }

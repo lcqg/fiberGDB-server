@@ -115,6 +115,14 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     }
 
     @Override
+    public RoutePoint findRoutePointByName(String name) {
+        RoutePoint point=pointRepo.findOneByName(name)
+                .blockOptional()
+                .orElse(null);
+        return point;
+    }
+
+    @Override
     public Long save(RoutePoint point) {
         return pointRepo.save(point).blockOptional().orElseThrow().getId();
     }

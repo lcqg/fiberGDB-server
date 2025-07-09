@@ -17,4 +17,5 @@ public interface RoutePointResources {
     Long save(RoutePoint point);
     void createFiberNoneReactive(Long fromId,Long toId,Fiber fiber);
     Flux<PathResult> retrieveFlux(Long startId, Long endId, double weightLimit, int routeCounts);
+    RoutePoint findRoutePointByName(String name);
 }
