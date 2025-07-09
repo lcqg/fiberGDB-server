@@ -7,6 +7,7 @@ import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
 import com.xiongdwm.fiberGDB.resources.RoutePointResources;
 import com.xiongdwm.fiberGDB.support.RSAUtils;
 import com.xiongdwm.fiberGDB.support.View;
+import com.xiongdwm.fiberGDB.support.orm.helper.AbstractCypherHelper;
 import com.xiongdwm.fiberGDB.support.serialize.JacksonUtil;
 
 
@@ -62,7 +63,7 @@ public class RoutePointController {
         // routePointResources.createFiber(fiberDto.getFromId(),fiberDto.getToId(),fiberDto.getFiber()).block();
         Fiber fiber = new Fiber();
         BeanUtils.copyProperties(fiberDto, fiber);
-        routePointResources.createFiberNoneReactive(fiberDto.getFromId(), fiberDto.getToId(), fiber);
+        routePointResources.createFiberNoneReactive(fiberDto.getFromId(), fiberDto.getToId(), fiber, AbstractCypherHelper.OperationType.CREATE);
         return View.SUCCESS;
     }
 
