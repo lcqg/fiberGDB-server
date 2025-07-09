@@ -44,4 +44,6 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
         @Query("MATCH (n:RoutePoint {id: $id}) RETURN n")
         Mono<RoutePoint> findByPrimaryKey(@Param("id") long id);
 
+        Mono<RoutePoint>findOneByName(@Param("name") String name);
+
 }
