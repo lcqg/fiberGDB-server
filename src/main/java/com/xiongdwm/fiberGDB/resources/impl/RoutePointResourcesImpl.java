@@ -52,9 +52,9 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     }
 
     @Override
-    public List<PathResult> retrieve(Long startId, Long endId, double weightLimit, int routeCounts,double maxDistance,String type) {
+    public List<PathResult> retrieve(Long startId, Long endId, double weightLimit, int routeCounts,double maxDistance,String pointUsed, String siteType, String fiberUsed, String nodesAbandon) {
         List<RoutePointDTOProjection> queryResult = pointRepo
-                .findRoutesByCypher(startId, endId, weightLimit, routeCounts)
+                .retrieveRoutesByParam(startId, endId, pointUsed, siteType, fiberUsed, nodesAbandon, weightLimit, routeCounts)
                 .collectList()
                 .blockOptional().orElse(Collections.emptyList());
         System.out.println(queryResult.size());
@@ -189,7 +189,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
 
     @Override
     public void merge() {
-        
+
         pointRepo.mergeFiber().subscribe();
     }
 }

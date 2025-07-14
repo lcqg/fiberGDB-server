@@ -12,7 +12,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 import reactor.core.publisher.Mono;
 
 public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint, Long> {
-        @Query("MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER_CONCLUSION*1..15]-(end:RoutePoint {id: $endId}) "
+        @Query("MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER_CONCLUSION*1..7]-(end:RoutePoint {id: $endId}) "
                         +
                         "WHERE start <> end AND " +
                         "NONE(node IN nodes(p)[1..-1] WHERE node = start) AND " +
@@ -22,9 +22,40 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
                         "LIMIT $routesCount")
         Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId") Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit, @Param("routesCount") int routesCount);
 
+        @Query(
+                "MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER_CONCLUSION*1..7]-(end:RoutePoint {id: $endId}) " +
+                "WHERE start <> end " +
+                "AND (" +
+                        "$pointUsed IS NULL OR start.exist IN split($pointUsed, ',')" +
+                ") " +
+                "AND (" +
+                        "$siteType IS NULL OR start.level IN split($siteType, ',')" +
+                ") " +
+                "AND (" +
+                        "$fiberUsed IS NULL OR ALL(rel IN relationships(p) WHERE rel.stage IN split($fiberUsed, ','))" +
+                ") " +
+                "AND (" +
+                        "$nodesAbandon IS NULL OR NONE(node IN nodes(p) WHERE toString(node.id) IN split($nodesAbandon, ','))" +
+                ") " +
+                "AND REDUCE(sum=0, rel IN relationships(p) | sum + rel.weight) <= $weight " +
+                "RETURN nodes(p) AS routes " +
+                "ORDER BY length(p) ASC " +
+                "LIMIT $routeCount"
+        )
+        Flux<RoutePointDTOProjection> retrieveRoutesByParam(
+                @Param("startId") Long startId,
+                @Param("endId") Long endId,
+                @Param("pointUsed") String pointUsed,
+                @Param("siteType") String siteType,
+                @Param("fiberUsed") String fiberUsed,
+                @Param("nodesAbandon") String nodesAbandon,
+                @Param("weight") double weight,
+                @Param("routeCount") int routeCount
+        );
+
         @Query("MATCH (p1:RoutePoint)-[r:FIBER]->(p2:RoutePoint) " +
                         "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context, COLLECT(r.stage) AS typeSet, MAX(r.maxDis) AS maxDis, MIN(r.minDis) AS minDis "
-                        +"MERGE (p1)-[newRel:FIBER_CONCLUSION {weight: minWeight, context: context, typeSet: typeSet, maxDis: maxDis, minDis: minDis}]->(p2)")
+                        +"MERGE (p1)-[newRel:FIBER_CONCLUSION {weight: minWeight, context: context, typeSet: typeSet, maxDis: coalesce(maxDis, 0), minDis:coalesce(minDis, 0)}]->(p2)")
         Mono<Void> mergeFiber();
 
         @Query("MATCH (a:RoutePoint {id:$pid}), (b:RoutePoint) " +
