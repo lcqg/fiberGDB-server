@@ -7,6 +7,7 @@ import com.xiongdwm.fiberGDB.bo.fiberRDB.FiberEntityRDB;
 import com.xiongdwm.fiberGDB.bo.fiberRDB.RoutePointEntityRDB;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
+import com.xiongdwm.fiberGDB.entities.relationship.FiberConclusion;
 import com.xiongdwm.fiberGDB.resources.RoutePointResources;
 import com.xiongdwm.fiberGDB.support.BeanContext;
 import com.xiongdwm.fiberGDB.support.FacilityStage;
@@ -19,6 +20,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public record GenericTableEventHandler<T>(
         Class<T> entityClass,
@@ -61,6 +63,40 @@ public record GenericTableEventHandler<T>(
         } else if (entity instanceof FiberEntityRDB dto) {
             pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(),
                     convertToNeo4jEntity(entity), opType);
+                    
+            pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(), fiber);
+            RoutePoint point=pointResources.getRoutePointById(dto.getFromStationId());
+            if(point!=null){
+                FiberConclusion conclusion = pointResources.getFiberConclusionBetweenPoints(dto.getFromStationId(), dto.getToStationId());
+                Set<FiberConclusion> conclusions = point.getConclusions();
+                if(null ==conclusion){
+                    conclusion = new FiberConclusion();
+                    conclusion.setContext(dto.getName());
+                    conclusion.setWeight(weight);
+                    conclusion.setTypeSet(dto.getExists());
+                    conclusion.setMaxDis(dto.getDis());
+                    conclusion.setMinDis(dto.getDis());
+                    conclusion.setTowards(pointResources.getRoutePointById(dto.getToStationId()));
+                    if (conclusions == null) {
+                        conclusions = Set.of(conclusion);
+                        point.setConclusions(conclusions);
+                    } else {
+                        conclusions.add(conclusion);
+                    }
+                    pointResources.save(point);
+                } else {
+                    conclusions.removeIf(c -> c.getTowards().getId().equals(dto.getToStationId()));
+                    var oldContext = conclusion.getContext();
+                    conclusion.setContext(oldContext + "," + dto.getName());
+                    var oldWeight = conclusion.getWeight();
+                    conclusion.setWeight(Math.min(oldWeight, weight));
+                    conclusion.setTypeSet(conclusion.getTypeSet() + "," + dto.getExists());
+                    conclusion.setMaxDis(Math.max(conclusion.getMaxDis(), dto.getDis()));
+                    conclusion.setMinDis(Math.min(conclusion.getMinDis(), dto.getDis()));
+                    pointResources.save(point);
+                }
+            }
+
         }
     }
 
