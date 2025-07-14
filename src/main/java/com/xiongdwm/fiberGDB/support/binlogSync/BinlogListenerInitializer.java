@@ -18,7 +18,7 @@ public class BinlogListenerInitializer {
     private EntityColumnManager entityColumnManager;
 
 
-    @PostConstruct
+    // @PostConstruct
     public void initialize() throws IOException {
         //entity's columns init
         entityColumnManager.initializeEntityColumns();

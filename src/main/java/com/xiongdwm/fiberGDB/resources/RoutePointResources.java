@@ -22,4 +22,5 @@ public interface RoutePointResources {
     RoutePoint findRoutePointByName(String name);
     RoutePoint getRoutePointById(Long id);
     FiberConclusion getFiberConclusionBetweenPoints(Long fromId, Long toId);
+    void merge();
 }

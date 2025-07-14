@@ -184,7 +184,12 @@ public class RoutePointResourcesImpl implements RoutePointResources {
 
     @Override
     public FiberConclusion getFiberConclusionBetweenPoints(Long fromId, Long toId) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getFiberConclusionBetweenPoints'");
+    }
+
+    @Override
+    public void merge() {
+        
+        pointRepo.mergeFiber().subscribe();
     }
 }
