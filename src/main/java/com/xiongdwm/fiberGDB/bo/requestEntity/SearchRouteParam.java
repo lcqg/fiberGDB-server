@@ -10,8 +10,11 @@ public record SearchRouteParam(
         double weight,
         @Nullable int routeCount,
         @Nullable double maxDistance,
-        @Nullable String type,
-        @Nullable String resourceType) {
+        @Nullable String nodesAbandon,
+        @Nullable String pointUsed,
+        @Nullable String fiberUsed,
+        @Nullable String siteType
+        ) {
 
         @Override
         public Long startId() {
@@ -35,14 +38,26 @@ public record SearchRouteParam(
 
         @Override
         @Nullable
-        public String type() {
-            return type;
+        public String nodesAbandon() {
+            return nodesAbandon;
         }
 
         @Override
         @Nullable
-        public String resourceType() {
-            return resourceType;
+        public String pointUsed() {
+            return pointUsed;
+        }
+
+        @Override
+        @Nullable
+        public String fiberUsed() {
+            return fiberUsed;
+        }
+
+        @Override
+        @Nullable
+        public String siteType() {
+            return siteType;
         }
 
         @Override

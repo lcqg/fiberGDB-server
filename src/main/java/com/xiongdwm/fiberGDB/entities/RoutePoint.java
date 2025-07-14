@@ -130,6 +130,15 @@ public class RoutePoint {
         this.cables.add(fiber);
     }
 
+    public Set<FiberConclusion> getConclusions() {
+        return conclusions;
+    }
+
+    public void setConclusions(Set<FiberConclusion> conclusions) {
+        this.conclusions = conclusions;
+    }
+    
+
     @Override
     public String toString() {
         return "RoutePoint{" +
@@ -137,4 +146,6 @@ public class RoutePoint {
                 ", name='" + name + '\'' +
                 '}';
     }
+
+
 }

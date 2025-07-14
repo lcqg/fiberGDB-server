@@ -1,6 +1,7 @@
 package com.xiongdwm.fiberGDB.rest;
 
 import com.xiongdwm.fiberGDB.bo.FiberDto;
+import com.xiongdwm.fiberGDB.bo.PathResult;
 import com.xiongdwm.fiberGDB.bo.requestEntity.SearchRouteParam;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
@@ -12,11 +13,16 @@ import com.xiongdwm.fiberGDB.support.serialize.JacksonUtil;
 
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static java.util.Collections.emptyList;
 
 @RestController
 public class RoutePointController {
@@ -68,22 +74,25 @@ public class RoutePointController {
 
     @RequestMapping("/rel/searchRoute")
     public Object searchRoute(SearchRouteParam param) {
-        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance()));
+        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance(),param.siteType()));
     }
 
     @RequestMapping("/rel/searchRouteByStationName")
-    public Object streamingSearchRoute(SearchRouteParam param) {
+    public List<PathResult> streamingSearchRoute(@RequestBody SearchRouteParam param) {
         Long startId = param.startId();
         Long endId = param.endId();
         if(startId == null || endId == null) {
             RoutePoint start = routePointResources.findRoutePointByName(param.fromStation());
+            System.out.println("start:"+start);
             RoutePoint end = routePointResources.findRoutePointByName(param.toStation());
+            System.out.println("end:"+end);
             if (start == null || end == null) {
-                return View.getError("起点或终点站点不存在");
+                return emptyList();
             }
             startId = start.getId();
             endId = end.getId();
         }
-        return View.getSuccess(routePointResources.retrieve(startId, endId, param.weight(), param.routeCount(),param.maxDistance()));
+        System.out.println("路径搜索");
+        return routePointResources.retrieve(startId, endId, param.weight(), param.routeCount(),param.maxDistance(), param.siteType());
     }
 }

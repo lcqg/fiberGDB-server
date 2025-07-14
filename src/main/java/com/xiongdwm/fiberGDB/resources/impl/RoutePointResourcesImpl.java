@@ -4,6 +4,7 @@ import com.xiongdwm.fiberGDB.bo.PathResult;
 import com.xiongdwm.fiberGDB.bo.RoutePointDTOProjection;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
 import com.xiongdwm.fiberGDB.entities.relationship.Fiber;
+import com.xiongdwm.fiberGDB.entities.relationship.FiberConclusion;
 import com.xiongdwm.fiberGDB.repository.RoutePointRepository;
 import com.xiongdwm.fiberGDB.resources.RoutePointResources;
 import com.xiongdwm.fiberGDB.support.GpsUtils;
@@ -51,7 +52,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     }
 
     @Override
-    public List<PathResult> retrieve(Long startId, Long endId, double weightLimit, int routeCounts,double maxDistance) {
+    public List<PathResult> retrieve(Long startId, Long endId, double weightLimit, int routeCounts,double maxDistance,String type) {
         List<RoutePointDTOProjection> queryResult = pointRepo
                 .findRoutesByCypher(startId, endId, weightLimit, routeCounts)
                 .collectList()
@@ -79,7 +80,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
             var remain=routeCounts - queryResult.size();
             List<PathResult> fromStartBfs= bfs(endId, maxDistance, startId, remain);
             List<PathResult> fromEndBfs= bfs(startId, maxDistance, endId, remain).stream().peek(it -> {
-                Collections.reverse(it.routes()); // 移除起点
+                Collections.reverse(it.routes());
             }).toList();
             fromStartBfs.addAll(fromEndBfs);
             fromStartBfs.sort(Comparator.comparingDouble(PathResult::buildDistance));
@@ -144,7 +145,6 @@ public class RoutePointResourcesImpl implements RoutePointResources {
                 System.out.println("Start point not found: " + station);
                 return Collections.emptyList();
             }
-            System.out.println(stationPoint.toString());
             RoutePointDTOProjection projection=new RoutePointDTOProjection();
             BeanUtils.copyProperties(stationPoint, projection);
             List<RoutePointDTOProjection> nearbyPoints = pointRepo
@@ -171,5 +171,20 @@ public class RoutePointResourcesImpl implements RoutePointResources {
             }
 
         return result;
+    }
+
+    @Override
+    public RoutePoint getRoutePointById(Long id) {
+        if (id == null) {
+            return null;
+        }
+       return pointRepo.findByPrimaryKey(id)
+                .blockOptional().orElse(null);
+    }
+
+    @Override
+    public FiberConclusion getFiberConclusionBetweenPoints(Long fromId, Long toId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getFiberConclusionBetweenPoints'");
     }
 }

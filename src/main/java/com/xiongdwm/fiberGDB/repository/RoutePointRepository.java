@@ -2,7 +2,7 @@ package com.xiongdwm.fiberGDB.repository;
 
 import com.xiongdwm.fiberGDB.bo.RoutePointDTOProjection;
 import com.xiongdwm.fiberGDB.entities.RoutePoint;
-
+import com.xiongdwm.fiberGDB.entities.relationship.FiberConclusion;
 
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +12,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 import reactor.core.publisher.Mono;
 
 public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint, Long> {
-        @Query("MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER_CONCLUSION*1..5]-(end:RoutePoint {id: $endId}) "
+        @Query("MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER_CONCLUSION*1..15]-(end:RoutePoint {id: $endId}) "
                         +
                         "WHERE start <> end AND " +
                         "NONE(node IN nodes(p)[1..-1] WHERE node = start) AND " +
@@ -20,10 +20,10 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
                         "RETURN nodes(p) AS routes " +
                         "ORDER BY length(p) ASC " +
                         "LIMIT $routesCount")
-        Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId") Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit, int routesCount);
+        Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId") Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit, @Param("routesCount") int routesCount);
 
         @Query("MATCH (p1:RoutePoint)-[r:FIBER]->(p2:RoutePoint) " +
-                        "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context, COLLECT(r.type) AS typeSet, MAX(r.maxDis) AS maxDis, MIN(r.minDis) AS minDis "
+                        "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context, COLLECT(r.stage) AS typeSet, MAX(r.maxDis) AS maxDis, MIN(r.minDis) AS minDis ,"
                         +"MERGE (p1)-[newRel:FIBER_CONCLUSION {weight: minWeight, context: context, typeSet: typeSet, maxDis: maxDis, minDis: minDis}]->(p2)")
         Mono<Void> mergeFiber();
 
@@ -43,7 +43,10 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
 
         @Query("MATCH (n:RoutePoint {id: $id}) RETURN n")
         Mono<RoutePoint> findByPrimaryKey(@Param("id") long id);
+        @Query("MATCH (n:RoutePoint {name: $name}) RETURN n")
+        Mono<RoutePoint>findOneByName(@Param("name")String name);
 
-        Mono<RoutePoint>findOneByName(@Param("name") String name);
+        @Query("MATCH (from:RoutePoint {id: $fromId})-[r:FIBER_CONCLUSION]-(to:RoutePoint {id: $toId}) RETURN r")
+        Mono<FiberConclusion> findFiberConclusionByFromIdAndToId(@Param("fromId") Long fromId, @Param("toId") Long toId);
 
 }
