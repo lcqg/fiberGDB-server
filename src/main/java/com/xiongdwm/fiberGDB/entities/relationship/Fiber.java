@@ -15,7 +15,7 @@ public class Fiber {
     private Long gdbId;
     private @NotNull Long id;
     private String name;
-    private String dis;
+    private double dis;
     private String level;
     private String stage;
     @TargetNode
@@ -47,11 +47,11 @@ public class Fiber {
         this.name = name;
     }
 
-    public String getDis() {
+    public double getDis() {
         return dis;
     }
 
-    public void setDis(String dis) {
+    public void setDis(double dis) {
         this.dis = dis;
     }
 
