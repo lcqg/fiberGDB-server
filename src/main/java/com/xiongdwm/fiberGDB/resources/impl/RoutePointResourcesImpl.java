@@ -14,7 +14,6 @@ import jakarta.annotation.Resource;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
@@ -185,6 +184,12 @@ public class RoutePointResourcesImpl implements RoutePointResources {
 
     @Override
     public FiberConclusion getFiberConclusionBetweenPoints(Long fromId, Long toId) {
-        return pointRepo.findFiberConclusionByFromIdAndToId(fromId,toId).block();
+        throw new UnsupportedOperationException("Unimplemented method 'getFiberConclusionBetweenPoints'");
+    }
+
+    @Override
+    public void merge() {
+        
+        pointRepo.mergeFiber().subscribe();
     }
 }

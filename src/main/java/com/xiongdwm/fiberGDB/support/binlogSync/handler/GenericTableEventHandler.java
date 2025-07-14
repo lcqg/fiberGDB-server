@@ -63,12 +63,12 @@ public record GenericTableEventHandler<T>(
         } else if (entity instanceof FiberEntityRDB dto) {
             Fiber fiber = convertToNeo4jEntity(entity);
             pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(), fiber, opType);
-
+            var weight = fiber.getWeight();        
             RoutePoint point=pointResources.getRoutePointById(dto.getFromStationId());
             if(point!=null){
                 FiberConclusion conclusion = pointResources.getFiberConclusionBetweenPoints(dto.getFromStationId(), dto.getToStationId());
                 Set<FiberConclusion> conclusions = point.getConclusions();
-                if(null ==conclusion){
+                if(null ==conclusion|| conclusions.isEmpty()){
                     conclusion = new FiberConclusion();
                     conclusion.setContext(dto.getName());
                     conclusion.setWeight(fiber.getWeight());
@@ -95,7 +95,6 @@ public record GenericTableEventHandler<T>(
                     pointResources.save(point);
                 }
             }
-
         }
     }
 

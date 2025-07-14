@@ -55,6 +55,13 @@ public class RoutePointController {
         return View.SUCCESS;
     }
 
+    @RequestMapping("/fiber/mergee")
+    public Object mergeFiber(){
+        routePointResources.merge();
+        System.out.println("merge fiber conclusion");
+        return View.SUCCESS;
+    } 
+
 
     @RequestMapping("/point/add")
     public Object save(RoutePoint p) {

@@ -23,7 +23,7 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
         Flux<RoutePointDTOProjection> findRoutesByCypher(@Param("startId") Long startId, @Param("endId") Long endId, @Param("weightLimit") double weightLimit, @Param("routesCount") int routesCount);
 
         @Query("MATCH (p1:RoutePoint)-[r:FIBER]->(p2:RoutePoint) " +
-                        "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context, COLLECT(r.stage) AS typeSet, MAX(r.maxDis) AS maxDis, MIN(r.minDis) AS minDis ,"
+                        "WITH p1, p2, MIN(r.weight) AS minWeight, COLLECT(r.name) AS context, COLLECT(r.stage) AS typeSet, MAX(r.maxDis) AS maxDis, MIN(r.minDis) AS minDis "
                         +"MERGE (p1)-[newRel:FIBER_CONCLUSION {weight: minWeight, context: context, typeSet: typeSet, maxDis: maxDis, minDis: minDis}]->(p2)")
         Mono<Void> mergeFiber();
 
