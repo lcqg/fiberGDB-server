@@ -61,10 +61,9 @@ public record GenericTableEventHandler<T>(
         if (entity instanceof RoutePointEntityRDB) {
             pointResources.save(convertToNeo4jEntity(entity));
         } else if (entity instanceof FiberEntityRDB dto) {
-            pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(),
-                    convertToNeo4jEntity(entity), opType);
-                    
-            pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(), fiber);
+            Fiber fiber = convertToNeo4jEntity(entity);
+            pointResources.createFiberNoneReactive(dto.getFromStationId(), dto.getToStationId(), fiber, opType);
+
             RoutePoint point=pointResources.getRoutePointById(dto.getFromStationId());
             if(point!=null){
                 FiberConclusion conclusion = pointResources.getFiberConclusionBetweenPoints(dto.getFromStationId(), dto.getToStationId());
@@ -72,7 +71,7 @@ public record GenericTableEventHandler<T>(
                 if(null ==conclusion){
                     conclusion = new FiberConclusion();
                     conclusion.setContext(dto.getName());
-                    conclusion.setWeight(weight);
+                    conclusion.setWeight(fiber.getWeight());
                     conclusion.setTypeSet(dto.getExists());
                     conclusion.setMaxDis(dto.getDis());
                     conclusion.setMinDis(dto.getDis());
@@ -89,7 +88,7 @@ public record GenericTableEventHandler<T>(
                     var oldContext = conclusion.getContext();
                     conclusion.setContext(oldContext + "," + dto.getName());
                     var oldWeight = conclusion.getWeight();
-                    conclusion.setWeight(Math.min(oldWeight, weight));
+                    conclusion.setWeight(Math.min(oldWeight, fiber.getWeight()));
                     conclusion.setTypeSet(conclusion.getTypeSet() + "," + dto.getExists());
                     conclusion.setMaxDis(Math.max(conclusion.getMaxDis(), dto.getDis()));
                     conclusion.setMinDis(Math.min(conclusion.getMinDis(), dto.getDis()));
@@ -118,12 +117,8 @@ public record GenericTableEventHandler<T>(
 
     public void handleInsertEvent(WriteRowsEventData data) {
         for (Serializable[] row : data.getRows()) {
-            try {
-                T entity = convertRowToEntity(row);
-                handleInsertEvent(entity);
-            } catch (Exception e) {
-                System.err.println("Insert row failed: " + e.getMessage());
-            }
+            T entity = convertRowToEntity(row);
+            handleInsertEvent(entity);
         }
     }
 
