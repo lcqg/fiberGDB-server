@@ -84,7 +84,7 @@ public record GenericTableEventHandler<T>(
                     }
                     pointResources.save(point);
                 } else {
-                    conclusions.removeIf(c -> c.getTowards().getId().equals(dto.getToStationId()));
+                    conclusions.removeIf(c -> c.getTowards().getId().equals(dto.getToStationId())|| c.getTowards().getId().equals(dto.getFromStationId()));
                     var oldContext = conclusion.getContext();
                     conclusion.setContext(oldContext + "," + dto.getName());
                     var oldWeight = conclusion.getWeight();
