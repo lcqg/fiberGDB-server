@@ -48,6 +48,7 @@ public class EntityColumnManager {
         routePointColumnIndexMap.put("area",15);
         routePointColumnIndexMap.put("level",21);
         routePointColumnIndexMap.put("exist",46);
+        routePointColumnIndexMap.put("site_type",63);
         return routePointColumnIndexMap;
     }
 }

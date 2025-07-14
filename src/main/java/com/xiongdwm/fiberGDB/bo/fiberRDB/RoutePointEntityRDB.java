@@ -22,6 +22,7 @@ public class RoutePointEntityRDB {
     private String qrCode;
     private String exist;
     private Date updateTime;
+    private String siteType;
 
     public Long getId() {
         return id;
@@ -150,5 +151,13 @@ public class RoutePointEntityRDB {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getSiteType() {
+        return siteType;
+    }
+
+    public void setSiteType(String siteType) {
+        this.siteType = siteType;
     }
 }

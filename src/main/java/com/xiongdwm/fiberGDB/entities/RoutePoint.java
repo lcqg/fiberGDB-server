@@ -20,30 +20,38 @@ public class RoutePoint {
     private RoutePointType type;
     private String level;
     private FacilityStage exist;
-    @Relationship(type = "FIBER", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "FIBER_CONCLUSION", direction = Relationship.Direction.OUTGOING)
     private Set<Fiber> cables;
     @Relationship(type="FIBER_CONCLUSION",direction = Relationship.Direction.OUTGOING)
     private Set<FiberConclusion> conclusions;
 
-    public enum RoutePointType{
+    public enum RoutePointType {
         STATION("机房"),
         ODN("光交箱"),
-        BOX("分线盒"),
+        BOX("分光器"),
         TERMINAL("终端盒"),
         SWITCH_BOX("开关柜"),
-        RING_MAIN_UNIT("环网柜"),
+        Ring_Main_Unit("环网柜"),
         TYPE_T("T节点"),
         TRANSFORMER_STATION("变电站"),
         TERMINAL_POLE("终端杆"),
         PYLON("铁塔"),
-        PI_NODE("Π节点"),
+        FIBER_BOX("分纤箱"),//DP
+        RESOURCE_DOT("资源点"),//基站
         TYPE_UNDEFINED("未知节点类型");
-        private final String info;
-        RoutePointType(String info){
-            this.info=info;
+
+        RoutePointType(String name) {
+            this.name = name;
         }
-        public String getInfo(){
-            return info;
+
+        private String name;
+
+        public String getName() {
+            return this.name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
     }
     public Long getId() {

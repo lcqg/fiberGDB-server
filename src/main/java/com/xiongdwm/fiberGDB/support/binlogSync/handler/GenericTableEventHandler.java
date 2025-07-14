@@ -34,12 +34,15 @@ public record GenericTableEventHandler<T>(
             BeanUtils.copyProperties(dto, routePoint);
             routePoint.setType(RoutePoint.RoutePointType.valueOf(dto.getType()));
             routePoint.setExist(FacilityStage.valueOf(dto.getExist()));
+            if("STATION".equals(dto.getType())) {
+                routePoint.setLevel(dto.getSiteType());
+            }
             return (R) routePoint;
         } else if (entity instanceof FiberEntityRDB dto) {
             Fiber fiber = new Fiber();
             BeanUtils.copyProperties(dto, fiber);
             FacilityStage existsEnum = FacilityStage.valueOf(dto.getExists());
-            fiber.setStage(existsEnum.getText());
+            fiber.setStage(existsEnum.name());
             double weight = existsEnum.getCode() < 0 ? 99d
                     : FacilityStage.getHalf().contains(existsEnum) ? 0.5d : 1d;
             fiber.setWeight(weight);
@@ -49,6 +52,7 @@ public record GenericTableEventHandler<T>(
     }
 
     private void saveOrUpdateEntity(T entity, AbstractCypherHelper.OperationType opType) {
+        System.out.println(entity);
         ApplicationContext context = BeanContext.getApplicationContext();
         RoutePointResources pointResources = context.getBean(RoutePointResources.class);
 
