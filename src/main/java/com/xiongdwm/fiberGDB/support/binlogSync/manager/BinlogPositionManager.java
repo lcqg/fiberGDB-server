@@ -1,13 +1,18 @@
 package com.xiongdwm.fiberGDB.support.binlogSync.manager;
 
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Component;
+
 import java.io.*;
 
+@Component
 public class BinlogPositionManager {
 
-    private static final String POSITION_FILE = "binlog_position.dat";
+    @Resource
+    private FrdbConfig frdbConfig;
 
-    public static void savePosition(String binlogFilename, long position) {
-        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(POSITION_FILE))) {
+    public void savePosition(String binlogFilename, long position) {
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(frdbConfig.getPath() + File.separator + frdbConfig.getLocalname()))) {
             dos.writeUTF(binlogFilename);
             dos.writeLong(position);
         } catch (IOException e) {
@@ -15,11 +20,11 @@ public class BinlogPositionManager {
         }
     }
 
-    public static BinlogPosition loadPosition() {
-        File file = new File(POSITION_FILE);
+    public BinlogPosition loadPosition() {
+        File file = new File(frdbConfig.getPath() + File.separator + frdbConfig.getLocalname());
         if (!file.exists()) {
             System.out.println("position NOT FOUND");
-            savePosition("binlog.000439", 0L);
+            savePosition(frdbConfig.getBinname(), frdbConfig.getPosition());
             System.out.println("file created");
             return null;
         }

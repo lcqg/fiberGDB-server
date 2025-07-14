@@ -5,7 +5,8 @@ import com.github.shyiko.mysql.binlog.event.*;
 import com.xiongdwm.fiberGDB.support.binlogSync.handler.GenericTableEventHandler;
 import com.xiongdwm.fiberGDB.support.binlogSync.handler.TableEventHandler;
 import com.xiongdwm.fiberGDB.support.binlogSync.manager.BinlogPositionManager;
-import org.springframework.beans.factory.annotation.Value;
+import com.xiongdwm.fiberGDB.support.binlogSync.manager.FrdbConfig;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -14,17 +15,10 @@ import java.util.Map;
 
 @Component
 public class BinlogSyncComponent {
-    @Value("${frdb.hostname}")
-    private String hostname;
-
-    @Value("${frdb.port}")
-    private int port;
-
-    @Value("${frdb.username}")
-    private String username;
-
-    @Value("${frdb.password}")
-    private String password;
+    @Resource
+    private FrdbConfig frdbConfig;
+    @Resource
+    private BinlogPositionManager binlogPositionManager;
 
     private BinaryLogClient client;
     private final Map<Long, String> tableMap;
@@ -42,31 +36,32 @@ public class BinlogSyncComponent {
         String key = getMapKey(databaseName, tableName);
         TableEventHandler<?> handler = handlerFactory.createHandler(entityClass);
         handlers.put(key, handler);
-        System.out.println("================registered handler:"+handlers.keySet()+"===========>>>>");
+        System.out.println("================registered handler:" + handlers.keySet() + "===========>>>>");
     }
 
     public void startSync() throws IOException {
-        BinlogPositionManager.BinlogPosition binlogPosition = BinlogPositionManager.loadPosition();
-        client = new BinaryLogClient(hostname, port, username, password);
+        BinlogPositionManager.BinlogPosition binlogPosition = binlogPositionManager.loadPosition();
+        client = new BinaryLogClient(frdbConfig.getHostname(), frdbConfig.getPort(), frdbConfig.getUsername(), frdbConfig.getPassword());
         System.out.println("=================connected to binlog client=================>>>>");
         if (binlogPosition == null) return;
-
+        client.setKeepAlive(true);
+        client.setKeepAliveInterval(5000); // 5秒
         client.setBinlogFilename(binlogPosition.getBinlogFilename());
         client.setBinlogPosition(binlogPosition.getPosition());
-        System.out.println("=========binlog filename:"+client.getBinlogFilename()+", pos:"+client.getBinlogPosition()+"=======>>>>");
+        System.out.println("=========binlog filename:" + client.getBinlogFilename() + ", pos:" + client.getBinlogPosition() + "=======>>>>");
 
         client.registerEventListener(event -> {
             EventType eventType = event.getHeader().getEventType();
             switch (eventType) {
                 case TABLE_MAP -> handleTableMapEvent(event);
-                case EXT_WRITE_ROWS,WRITE_ROWS -> handleWriteRowsEvent(event);
-                case EXT_UPDATE_ROWS,UPDATE_ROWS-> handleUpdateRowsEvent(event);
-                case EXT_DELETE_ROWS,DELETE_ROWS-> handleDeleteRowsEvent(event);
+                case EXT_WRITE_ROWS, WRITE_ROWS -> handleWriteRowsEvent(event);
+                case EXT_UPDATE_ROWS, UPDATE_ROWS -> handleUpdateRowsEvent(event);
+                case EXT_DELETE_ROWS, DELETE_ROWS -> handleDeleteRowsEvent(event);
             }
-            BinlogPositionManager.savePosition(client.getBinlogFilename(), client.getBinlogPosition());
+            binlogPositionManager.savePosition(client.getBinlogFilename(), client.getBinlogPosition());
         });
         //unblocking
-        new Thread(()->{
+        new Thread(() -> {
             try {
                 client.connect();
             } catch (IOException e) {
@@ -86,7 +81,7 @@ public class BinlogSyncComponent {
         String fullTableName = tableMap.get(data.getTableId());
         if (fullTableName != null) {
             TableEventHandler<?> handler = handlers.get(fullTableName);
-            if(handler==null)return;
+            if (handler == null) return;
             ((GenericTableEventHandler<?>) handler).handleInsertEvent(data);
         }
     }

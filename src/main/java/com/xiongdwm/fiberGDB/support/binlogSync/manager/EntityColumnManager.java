@@ -30,7 +30,7 @@ public class EntityColumnManager {
         fiberColumnIndexMap.put("id", 0);
         fiberColumnIndexMap.put("name", 1);
         fiberColumnIndexMap.put("from_station_id",24);
-        fiberColumnIndexMap.put("dis",14);
+        fiberColumnIndexMap.put("dis",19);
         fiberColumnIndexMap.put("to_station_id",27);
         fiberColumnIndexMap.put("exists",36);
         return fiberColumnIndexMap;
@@ -48,6 +48,7 @@ public class EntityColumnManager {
         routePointColumnIndexMap.put("area",15);
         routePointColumnIndexMap.put("level",21);
         routePointColumnIndexMap.put("exist",46);
+        routePointColumnIndexMap.put("site_type",63);
         return routePointColumnIndexMap;
     }
 }

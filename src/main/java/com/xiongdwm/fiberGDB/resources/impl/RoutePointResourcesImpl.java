@@ -74,7 +74,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
             System.out.println(it);
             System.out.println("-----------------");
         });
-        
+
         if (queryResult.size() < routeCounts) {
             System.out.println("================== start bfs search ==========================");
             var remain=routeCounts - queryResult.size();
@@ -129,13 +129,13 @@ public class RoutePointResourcesImpl implements RoutePointResources {
     }
 
     @Override
-    public void createFiberNoneReactive(Long fromId, Long toId, Fiber fiber) {
+    public void createFiberNoneReactive(Long fromId, Long toId, Fiber fiber, AbstractCypherHelper.OperationType operationType) {
         RoutePoint fromPoint = pointRepo.findById(fromId).blockOptional().orElse(null);
         RoutePoint toPoint = pointRepo.findById(toId).blockOptional().orElse(null);
         if (fromPoint == null || toPoint == null)
             return;
         CypherHelper<Fiber> fiberRepo = new CypherHelper<Fiber>(neo4jClient);
-        fiberRepo.createRelationship(fromPoint, toPoint, fiber, AbstractCypherHelper.RelationshipType.DIRECTED);
+        fiberRepo.createRelationship(fromPoint, toPoint, fiber, AbstractCypherHelper.RelationshipType.DIRECTED, operationType);
     }
 
     private List<PathResult> bfs(Long target, double maxDistance,Long station,int remain) {
@@ -153,7 +153,7 @@ public class RoutePointResourcesImpl implements RoutePointResources {
             System.out.println("nearbyPoints: " + nearbyPoints.size());
             if (nearbyPoints.isEmpty())
                 return Collections.emptyList();
-            
+
             System.out.println("remain: " + remain);
             for (RoutePointDTOProjection nearby : nearbyPoints) {
                 if (remain <= 0)
