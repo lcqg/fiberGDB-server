@@ -3,17 +3,17 @@ package com.xiongdwm.fiberGDB.bo.requestEntity;
 import io.micrometer.common.lang.Nullable;
 
 public record SearchRouteParam(
-        @Nullable Long startId,
-        @Nullable Long endId,
-        @Nullable String fromStation,
-        @Nullable String toStation,
-        double weight,
-        @Nullable int routeCount,
-        @Nullable double maxDistance,
-        @Nullable String nodesAbandon,
-        @Nullable String pointUsed,
-        @Nullable String fiberUsed,
-        @Nullable String siteType
+        @Nullable Long startId, // 起点 ID
+        @Nullable Long endId, // 终点 ID
+        @Nullable String fromStation, // 起点站名
+        @Nullable String toStation, // 终点站名
+        double weight, // 总权重
+        @Nullable int routeCount, // 路径数量
+        @Nullable double maxDistance, // 最大距离
+        @Nullable String nodesAbandon, // 跳过节点 id 逗号分隔
+        @Nullable String pointUsed, // 节点状态 对应exist字段 多个 逗号分隔
+        @Nullable String fiberUsed, // 关系类型 对应stage字段 多个 逗号分隔
+        @Nullable String siteType // 站点类型 对应level字段 多个 逗号分隔
         ) {
 
         @Override

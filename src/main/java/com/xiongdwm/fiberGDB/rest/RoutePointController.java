@@ -82,7 +82,7 @@ public class RoutePointController {
 
     @RequestMapping("/rel/searchRoute")
     public Object searchRoute(SearchRouteParam param) {
-        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance(),param.siteType()));
+        return View.getSuccess(routePointResources.retrieve(param.startId(), param.endId(), param.weight(), param.routeCount(),param.maxDistance(), param.siteType(), param.pointUsed(), param.fiberUsed(), param.nodesAbandon()));
     }
 
     @RequestMapping("/rel/searchRouteByStationName")
@@ -101,6 +101,6 @@ public class RoutePointController {
             endId = end.getId();
         }
         System.out.println("路径搜索");
-        return routePointResources.retrieve(startId, endId, param.weight(), param.routeCount(),param.maxDistance(), param.siteType());
+        return routePointResources.retrieve(startId, endId, param.weight(), param.routeCount(),param.maxDistance(), param.pointUsed(),param.siteType(),param.fiberUsed(),param.nodesAbandon());
     }
 }

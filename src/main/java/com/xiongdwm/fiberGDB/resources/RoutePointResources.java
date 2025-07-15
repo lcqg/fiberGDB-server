@@ -15,7 +15,7 @@ import java.util.List;
 
 public interface RoutePointResources {
     Mono<Void> createFiber(Long fromId,Long toId,Fiber fiber);
-    List<PathResult> retrieve(Long startId, Long endId, double weightLimit, int routeCounts, double maxDistance,String type);
+    List<PathResult> retrieve(Long startId, Long endId, double weightLimit, int routeCounts,double maxDistance,String pointUsed, String siteType, String fiberUsed, String nodesAbandon);
     Long save(RoutePoint point);
     void createFiberNoneReactive(Long fromId,Long toId,Fiber fiber, AbstractCypherHelper.OperationType operationType);
     Flux<PathResult> retrieveFlux(Long startId, Long endId, double weightLimit, int routeCounts);
