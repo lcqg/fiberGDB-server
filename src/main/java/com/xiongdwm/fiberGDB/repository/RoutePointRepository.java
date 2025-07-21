@@ -25,6 +25,8 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
         @Query(
                 "MATCH p = (start:RoutePoint {id: $startId})-[fiber:FIBER_CONCLUSION*1..7]-(end:RoutePoint {id: $endId}) " +
                 "WHERE start <> end " +
+                "NONE(node IN nodes(p)[1..-1] WHERE node = start) AND " +
+                "NONE(node IN nodes(p)[1..-1] WHERE node = end) " +
                 "AND (" +
                         "$pointUsed IS NULL OR start.exist IN split($pointUsed, ',')" +
                 ") " +
@@ -37,7 +39,9 @@ public interface RoutePointRepository extends ReactiveNeo4jRepository<RoutePoint
                 "AND (" +
                         "$nodesAbandon IS NULL OR NONE(node IN nodes(p) WHERE toString(node.id) IN split($nodesAbandon, ','))" +
                 ") " +
-                "AND REDUCE(sum=0, rel IN relationships(p) | sum + rel.weight) <= $weight " +
+                
+                
+                "REDUCE(sum=0, rel IN relationships(p) | sum + rel.weight) <= $weight " +
                 "RETURN nodes(p) AS routes " +
                 "ORDER BY length(p) ASC " +
                 "LIMIT $routeCount"
